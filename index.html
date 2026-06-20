@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>関東地方・中部地方 確認テスト</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #f5f4ef;
+    padding: 24px 16px;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: white;
+    border-radius: 12px;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .header .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .header h1 { font-size: 22px; font-weight: 500; margin-bottom: 10px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px;
+    padding: 3px 12px;
+    border-radius: 6px;
+    background: #e6f1fb;
+    color: #185fa5;
+  }
+
+  /* Score cards */
+  .score-area {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .score-card {
+    background: white;
+    border-radius: 8px;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .score-card .s-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .score-card .s-value { font-size: 22px; font-weight: 500; color: #1a1a1a; }
+
+  /* Section */
+  .section {
+    background: white;
+    border-radius: 12px;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: #f0ede6;
+    padding: 12px 20px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #444;
+    border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  }
+  .section-note {
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #666;
+    background: #fafaf8;
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+    line-height: 1.6;
+  }
+
+  /* Table */
+  .ref-table-wrap { padding: 12px 20px; overflow-x: auto; }
+  .ref-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+  .ref-table th, .ref-table td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    vertical-align: top;
+  }
+  .ref-table th { background: #f5f4ef; font-weight: 500; }
+
+  /* Question */
+  .question {
+    padding: 16px 20px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  }
+  .question:last-child { border-bottom: none; }
+  .q-num {
+    font-size: 13px;
+    font-weight: 500;
+    color: #185fa5;
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-size: 14px;
+    color: #222;
+    margin-bottom: 10px;
+    line-height: 1.7;
+  }
+  .q-sub { margin-top: 12px; padding-left: 8px; border-left: 2px solid #ddd; }
+  .q-sub-label { font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 6px; }
+  .option label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 0.5px solid rgba(0,0,0,0.15);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.1s;
+    background: white;
+  }
+  .option label:hover { background: #f5f4ef; }
+  .option input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+
+  /* Text input */
+  .text-answer {
+    width: 100%;
+    max-width: 320px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 0.5px solid rgba(0,0,0,0.25);
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+  }
+  .text-answer:focus {
+    outline: none;
+    border-color: #185fa5;
+    box-shadow: 0 0 0 2px rgba(24,95,165,0.1);
+  }
+  .unit { font-size: 13px; color: #666; margin-left: 6px; }
+
+  /* Feedback */
+  .feedback {
+    display: none;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .feedback.correct { background: #eaf3de; color: #3b6d11; display: block; }
+  .feedback.wrong { background: #fcebeb; color: #a32d2d; display: block; }
+  .feedback.info { background: #e6f1fb; color: #185fa5; display: block; }
+
+  /* Option coloring after check */
+  .option label.correct-ans { background: #eaf3de; border-color: #639922; color: #3b6d11; }
+  .option label.wrong-ans { background: #fcebeb; border-color: #e24b4a; color: #a32d2d; }
+
+  /* Buttons */
+  .btn-area {
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  .btn-primary {
+    background: #185fa5;
+    color: white;
+    border: none;
+  }
+  .btn-primary:hover { background: #0c447c; }
+  .btn-secondary {
+    background: white;
+    color: #444;
+    border: 0.5px solid rgba(0,0,0,0.25);
+  }
+  .btn-secondary:hover { background: #f5f4ef; }
+
+  /* Skip notice */
+  .skip-notice {
+    font-size: 12px;
+    color: #888;
+    background: #fafaf8;
+    border: 0.5px dashed #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .score-area { grid-template-columns: repeat(2, 1fr); }
+    body { padding: 12px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="label">5年社会（2025.6.14）</div>
+    <h1>関東地方・中部地方 確認テスト</h1>
+    <div class="badges">
+      <span class="badge">大問1：関東の川 (20点)</span>
+      <span class="badge">大問2：関東の観光・都市 (30点)</span>
+      <span class="badge">大問3：中部地方の県 (20点)</span>
+    </div>
+  </div>
+
+  <!-- Score cards -->
+  <div class="score-area">
+    <div class="score-card">
+      <div class="s-label">大問1</div>
+      <div class="s-value" id="sc1">—</div>
+    </div>
+    <div class="score-card">
+      <div class="s-label">大問2</div>
+      <div class="s-value" id="sc2">—</div>
+    </div>
+    <div class="score-card">
+      <div class="s-label">大問3</div>
+      <div class="s-value" id="sc3">—</div>
+    </div>
+    <div class="score-card" style="background:#e6f1fb;">
+      <div class="s-label">合計</div>
+      <div class="s-value" id="sc-total">—</div>
+    </div>
+  </div>
+
+  <!-- ===================== 大問1 ===================== -->
+  <div class="section">
+    <div class="section-header">大問1　関東地方を流れる2つの川（利根川・A）</div>
+    <div class="section-note">
+      ※表：利根川とAの上流・中流・下流のまとめを参照してください。（参考資料を見ながら解いてください）
+    </div>
+
+    <!-- 問1 -->
+    <div class="question" id="q1-1">
+      <div class="q-num">問1</div>
+      <div class="q-text">表中の <strong>A</strong>（上流が秩父市の盆地から流れる川）と <strong>C</strong>（中流で武蔵野台地に沿う川）にあてはまる川を選びなさい。</div>
+      <div class="q-sub">
+        <div class="q-sub-label">A の川</div>
+        <div class="options" id="q1a-opts">
+          <div class="option"><label><input type="radio" name="q1a" value="ア"> ア　荒川</label></div>
+          <div class="option"><label><input type="radio" name="q1a" value="イ"> イ　鬼怒川</label></div>
+          <div class="option"><label><input type="radio" name="q1a" value="ウ"> ウ　多摩川</label></div>
+          <div class="option"><label><input type="radio" name="q1a" value="エ"> エ　渡良瀬川</label></div>
+        </div>
+        <div class="feedback" id="fb-q1a"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">C の川</div>
+        <div class="options" id="q1c-opts">
+          <div class="option"><label><input type="radio" name="q1c" value="ア"> ア　荒川</label></div>
+          <div class="option"><label><input type="radio" name="q1c" value="イ"> イ　鬼怒川</label></div>
+          <div class="option"><label><input type="radio" name="q1c" value="ウ"> ウ　多摩川</label></div>
+          <div class="option"><label><input type="radio" name="q1c" value="エ"> エ　渡良瀬川</label></div>
+        </div>
+        <div class="feedback" id="fb-q1c"></div>
+      </div>
+    </div>
+
+    <!-- 問2 -->
+    <div class="question" id="q1-2">
+      <div class="q-num">問2</div>
+      <div class="q-text">利根川上流の群馬県と新潟県の県境付近につくられているダム <strong>B</strong> はどれですか。</div>
+      <div class="options" id="q2-opts">
+        <div class="option"><label><input type="radio" name="q2" value="ア"> ア　黒部ダム</label></div>
+        <div class="option"><label><input type="radio" name="q2" value="イ"> イ　早明浦ダム</label></div>
+        <div class="option"><label><input type="radio" name="q2" value="ウ"> ウ　小河内ダム</label></div>
+        <div class="option"><label><input type="radio" name="q2" value="エ"> エ　矢木沢ダム</label></div>
+      </div>
+      <div class="feedback" id="fb-q2"></div>
+    </div>
+
+    <!-- 問3 -->
+    <div class="question" id="q1-3">
+      <div class="q-num">問3　下線①（利根川上流の県庁所在地）について</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① この都市の名を漢字で答えなさい。</div>
+        <input type="text" class="text-answer" id="q3-1" placeholder="例：○○市">
+        <div class="feedback" id="fb-q3-1"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② この都市と同じ県で、関東内陸工業地域にふくまれる都市はどれですか。</div>
+        <div class="options" id="q3-2-opts">
+          <div class="option"><label><input type="radio" name="q3-2" value="ア"> ア　君津</label></div>
+          <div class="option"><label><input type="radio" name="q3-2" value="イ"> イ　太田</label></div>
+          <div class="option"><label><input type="radio" name="q3-2" value="ウ"> ウ　日立</label></div>
+          <div class="option"><label><input type="radio" name="q3-2" value="エ"> エ　市原</label></div>
+        </div>
+        <div class="feedback" id="fb-q3-2"></div>
+      </div>
+    </div>
+
+    <!-- 問4 -->
+    <div class="question" id="q1-4">
+      <div class="q-num">問4</div>
+      <div class="q-text">下線②（利根川下流の地域）では早場米がつくられています。早く収穫するおもな目的のひとつに「早く市場に出して高く売るため」がありますが、<strong>そのほかのおもな目的</strong>を15字以内で答えなさい。</div>
+      <input type="text" class="text-answer" id="q4" placeholder="15字以内で記述" style="max-width:420px;">
+      <div class="feedback" id="fb-q4"></div>
+    </div>
+
+    <!-- 問5 -->
+    <div class="question" id="q1-5">
+      <div class="q-num">問5</div>
+      <div class="q-text">下線③（利根川河口付近の沖合漁業の基地となっている漁港）の名を答えなさい。</div>
+      <input type="text" class="text-answer" id="q5" placeholder="○○港">
+      <div class="feedback" id="fb-q5"></div>
+    </div>
+
+    <!-- 問6 -->
+    <div class="question" id="q1-6">
+      <div class="q-num">問6</div>
+      <div class="q-text">下線④（秩父付近）では、豊富にとれる地下資源を利用してセメント工業がさかんです。この地下資源の名を漢字で答えなさい。</div>
+      <input type="text" class="text-answer" id="q6" placeholder="漢字で記述">
+      <div class="feedback" id="fb-q6"></div>
+    </div>
+
+    <!-- 問7 -->
+    <div class="question" id="q1-7">
+      <div class="q-num">問7</div>
+      <div class="q-text">下線⑤のような、土地の高さが海面よりも低い地域を何といいますか。カタカナで答えなさい。</div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input type="text" class="text-answer" id="q7" placeholder="カタカナで記述" style="max-width:200px;">
+        <span class="unit">地帯</span>
+      </div>
+      <div class="feedback" id="fb-q7"></div>
+    </div>
+
+    <!-- 問8 -->
+    <div class="question" id="q1-8">
+      <div class="q-num">問8</div>
+      <div class="q-text">下線⑥（水害の対策）について述べた文として <strong>正しくないもの</strong> を選びなさい。</div>
+      <div class="options" id="q8-opts">
+        <div class="option"><label><input type="radio" name="q8" value="ア"> ア　地面の舗装を、水を通しにくいものにします。</label></div>
+        <div class="option"><label><input type="radio" name="q8" value="イ"> イ　地下鉄の駅の出入り口を、周囲の道路より高くします。</label></div>
+        <div class="option"><label><input type="radio" name="q8" value="ウ"> ウ　地下につくられた貯水池に、一時的に雨水をたくわえます。</label></div>
+        <div class="option"><label><input type="radio" name="q8" value="エ"> エ　川の堤防や水門を整備することで、川の氾濫を防ぎます。</label></div>
+      </div>
+      <div class="feedback" id="fb-q8"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 大問2 ===================== -->
+  <div class="section">
+    <div class="section-header">大問2　修学旅行をテーマにした関東地方の問題</div>
+    <div class="section-note">
+      会話文の内容：上原さんと宮下さんが修学旅行の話をしている。横浜市の小学校の修学旅行先はA（栃木県）が多い。その他鎌倉・江ノ島・箱根、東京スカイツリー・国会議事堂なども登場する。
+    </div>
+
+    <!-- 問1 -->
+    <div class="question">
+      <div class="q-num">問1</div>
+      <div class="q-text">会話文中の <strong>A</strong>（栃木県にある世界遺産で修学旅行の定番地）を漢字2字で答えなさい。</div>
+      <input type="text" class="text-answer" id="q2-1" placeholder="漢字2字">
+      <div class="feedback" id="fb-q2-1"></div>
+    </div>
+
+    <!-- 問2 -->
+    <div class="question">
+      <div class="q-num">問2</div>
+      <div class="q-text">会話文中の <strong>B</strong>（日本で最も標高が高いところに湖面が位置する湖）の名を答えなさい。</div>
+      <input type="text" class="text-answer" id="q2-2" placeholder="○○湖">
+      <div class="feedback" id="fb-q2-2"></div>
+    </div>
+
+    <!-- 問3 -->
+    <div class="question">
+      <div class="q-num">問3　下線①（栃木県）について</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① 栃木県に位置する市町村を選びなさい。</div>
+        <div class="options" id="q2-3-1-opts">
+          <div class="option"><label><input type="radio" name="q2-3-1" value="ア"> ア　大学や研究機関が集まるつくば市</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-1" value="イ"> イ　こんにゃくいも栽培がさかんな下仁田町</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-1" value="ウ"> ウ　焼き物の生産で知られる益子町</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-1" value="エ"> エ　高原野菜の栽培がさかんな嬬恋村</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-3-1"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② 北海道に次いで飼育数が多い家畜（2023年）を選びなさい。</div>
+        <div class="options" id="q2-3-2-opts">
+          <div class="option"><label><input type="radio" name="q2-3-2" value="ア"> ア　肉牛</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-2" value="イ"> イ　乳牛</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-2" value="ウ"> ウ　ぶた</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-2" value="エ"> エ　採卵鶏</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-3-2"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">③ 栃木県を通る新幹線を選びなさい。</div>
+        <div class="options" id="q2-3-3-opts">
+          <div class="option"><label><input type="radio" name="q2-3-3" value="ア"> ア　上越新幹線</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-3" value="イ"> イ　北陸新幹線</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-3" value="ウ"> ウ　東北新幹線</label></div>
+          <div class="option"><label><input type="radio" name="q2-3-3" value="エ"> エ　東海道新幹線</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-3-3"></div>
+      </div>
+    </div>
+
+    <!-- 問4 -->
+    <div class="question">
+      <div class="q-num">問4　下線②（川崎市）について</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① 川崎市の位置（地図問題）</div>
+        <div class="skip-notice">※地図が必要なため、実際のテストで確認してください。（正解：地図の記号で解答）</div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② 川崎市について正しくないものを選びなさい。</div>
+        <div class="options" id="q2-4-2-opts">
+          <div class="option"><label><input type="radio" name="q2-4-2" value="ア"> ア　政令指定都市です。</label></div>
+          <div class="option"><label><input type="radio" name="q2-4-2" value="イ"> イ　石油化学工業の大工場が建ち並んでいます。</label></div>
+          <div class="option"><label><input type="radio" name="q2-4-2" value="ウ"> ウ　東京湾アクアラインが通っています。</label></div>
+          <div class="option"><label><input type="radio" name="q2-4-2" value="エ"> エ　谷津干潟には重要な生態系が残されています。</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-4-2"></div>
+      </div>
+    </div>
+
+    <!-- 問5 -->
+    <div class="question">
+      <div class="q-num">問5　下線③（鎌倉・江ノ島・箱根）について</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① 鎌倉から箱根へ向かう鉄道が通る、神奈川県南部の湾の名を答えなさい。</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="text" class="text-answer" id="q2-5-1" placeholder="○○湾" style="max-width:200px;">
+          <span class="unit">湾</span>
+        </div>
+        <div class="feedback" id="fb-q2-5-1"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② 箱根でつくられている伝統的工芸品の種類として正しいものを選びなさい。</div>
+        <div class="options" id="q2-5-2-opts">
+          <div class="option"><label><input type="radio" name="q2-5-2" value="ア"> ア　陶磁器</label></div>
+          <div class="option"><label><input type="radio" name="q2-5-2" value="イ"> イ　木工品</label></div>
+          <div class="option"><label><input type="radio" name="q2-5-2" value="ウ"> ウ　織物</label></div>
+          <div class="option"><label><input type="radio" name="q2-5-2" value="エ"> エ　和紙</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-5-2"></div>
+      </div>
+    </div>
+
+    <!-- 問6 -->
+    <div class="question">
+      <div class="q-num">問6</div>
+      <div class="q-text">下線④（東京スカイツリー）の高さを算用数字で答えなさい。</div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input type="text" class="text-answer" id="q2-6" placeholder="数字" style="max-width:140px;">
+        <span class="unit">m</span>
+      </div>
+      <div class="feedback" id="fb-q2-6"></div>
+    </div>
+
+    <!-- 問7 -->
+    <div class="question">
+      <div class="q-num">問7　下線⑤（東京）について</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① 情報通信技術の略称を選びなさい。</div>
+        <div class="options" id="q2-7-1-opts">
+          <div class="option"><label><input type="radio" name="q2-7-1" value="ア"> ア　ICT</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-1" value="イ"> イ　SNS</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-1" value="ウ"> ウ　LCC</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-1" value="エ"> エ　ATM</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-7-1"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② 東京都の人口は日本の人口のどのくらいですか。</div>
+        <div class="options" id="q2-7-2-opts">
+          <div class="option"><label><input type="radio" name="q2-7-2" value="ア"> ア　約6%</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-2" value="イ"> イ　約11%</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-2" value="ウ"> ウ　約16%</label></div>
+          <div class="option"><label><input type="radio" name="q2-7-2" value="エ"> エ　約21%</label></div>
+        </div>
+        <div class="feedback" id="fb-q2-7-2"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">③ 東京都に位置する世界自然遺産の名を答えなさい。</div>
+        <input type="text" class="text-answer" id="q2-7-3" placeholder="○○諸島">
+        <div class="feedback" id="fb-q2-7-3"></div>
+      </div>
+    </div>
+
+    <!-- 問8 -->
+    <div class="question">
+      <div class="q-num">問8</div>
+      <div class="q-sub">
+        <div class="q-sub-label">① 群馬県にある世界遺産の工場の名を答えなさい。（かつて生糸をつくっていた工場）</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="text" class="text-answer" id="q2-8-1" placeholder="○○製糸場" style="max-width:280px;">
+        </div>
+        <div class="feedback" id="fb-q2-8-1"></div>
+      </div>
+      <div class="q-sub" style="margin-top:12px;">
+        <div class="q-sub-label">② 関東地方の臨海部に位置する国際空港の名を漢字で答えなさい。</div>
+        <input type="text" class="text-answer" id="q2-8-2" placeholder="○○空港" style="max-width:280px;">
+        <div class="feedback" id="fb-q2-8-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 大問3 ===================== -->
+  <div class="section">
+    <div class="section-header">大問3　中部地方の県（①〜⑧の県の形）</div>
+    <div class="section-note">
+      ※県の形の図（①〜⑧）は実際の問題用紙を参照してください。①山梨県、②新潟県、③愛知県、④富山県、⑤長野県、⑥静岡県、⑦浜松市がある県（静岡）、⑧新潟の順と推定されます。実際の図で確認してください。
+    </div>
+
+    <!-- 問1 -->
+    <div class="question">
+      <div class="q-num">問1</div>
+      <div class="q-text">①の県庁所在地の名を漢字で答えなさい。</div>
+      <input type="text" class="text-answer" id="q3-1" placeholder="○○市">
+      <div class="feedback" id="fb-q3-1"></div>
+    </div>
+
+    <!-- 問2 -->
+    <div class="question">
+      <div class="q-num">問2</div>
+      <div class="q-text">②について述べた次のⅠ・Ⅱの文の正誤の組み合わせとして正しいものを選びなさい。<br>
+        <span style="font-size:13px; color:#555;">Ⅰ 伝統的工芸品である九谷焼がつくられています。<br>
+        Ⅱ 越後平野では、暗きょ排水によって乾田が湿田となり、稲作がさかんに行われています。</span>
+      </div>
+      <div class="options" id="q3-2-opts">
+        <div class="option"><label><input type="radio" name="q3-2" value="ア"> ア　Ⅰ＝正・Ⅱ＝正</label></div>
+        <div class="option"><label><input type="radio" name="q3-2" value="イ"> イ　Ⅰ＝誤・Ⅱ＝正</label></div>
+        <div class="option"><label><input type="radio" name="q3-2" value="ウ"> ウ　Ⅰ＝正・Ⅱ＝誤</label></div>
+        <div class="option"><label><input type="radio" name="q3-2" value="エ"> エ　Ⅰ＝誤・Ⅱ＝誤</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-2"></div>
+    </div>
+
+    <!-- 問3 -->
+    <div class="question">
+      <div class="q-num">問3</div>
+      <div class="q-text">③に位置する半島を次から2つ選んで、西に位置するものから順に記号で答えなさい。</div>
+      <div class="options" id="q3-3-opts">
+        <div class="option"><label><input type="radio" name="q3-3" value="ア・イ"> ア（能登半島）→ イ（渥美半島）　の順</label></div>
+        <div class="option"><label><input type="radio" name="q3-3" value="エ・イ"> エ（知多半島）→ イ（渥美半島）　の順</label></div>
+        <div class="option"><label><input type="radio" name="q3-3" value="イ・ア"> イ（渥美半島）→ ア（能登半島）　の順</label></div>
+        <div class="option"><label><input type="radio" name="q3-3" value="ウ・エ"> ウ（紀伊半島）→ エ（知多半島）　の順</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-3"></div>
+    </div>
+
+    <!-- 問4 -->
+    <div class="question">
+      <div class="q-num">問4</div>
+      <div class="q-text">④に河口が位置する川を選びなさい。</div>
+      <div class="options" id="q3-4-opts">
+        <div class="option"><label><input type="radio" name="q3-4" value="ア"> ア　阿賀野川</label></div>
+        <div class="option"><label><input type="radio" name="q3-4" value="イ"> イ　神通川</label></div>
+        <div class="option"><label><input type="radio" name="q3-4" value="ウ"> ウ　天竜川</label></div>
+        <div class="option"><label><input type="radio" name="q3-4" value="エ"> エ　長良川</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-4"></div>
+    </div>
+
+    <!-- 問5 -->
+    <div class="question">
+      <div class="q-num">問5</div>
+      <div class="q-text">⑤には天然の三大美林として知られる森林があります。この木の種類として正しいものを選びなさい。</div>
+      <div class="options" id="q3-5-opts">
+        <div class="option"><label><input type="radio" name="q3-5" value="ア"> ア　ひば</label></div>
+        <div class="option"><label><input type="radio" name="q3-5" value="イ"> イ　すぎ</label></div>
+        <div class="option"><label><input type="radio" name="q3-5" value="ウ"> ウ　ぶな</label></div>
+        <div class="option"><label><input type="radio" name="q3-5" value="エ"> エ　ひのき</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-5"></div>
+    </div>
+
+    <!-- 問6 -->
+    <div class="question">
+      <div class="q-num">問6</div>
+      <div class="q-text">⑥の県庁所在地の気候グラフを選びなさい。（ア〜エの気候グラフから選ぶ）</div>
+      <div class="skip-notice">※気候グラフが必要なため、実際のテストで確認してください。　正解：ウ</div>
+    </div>
+
+    <!-- 問7 -->
+    <div class="question">
+      <div class="q-num">問7</div>
+      <div class="q-text">⑦の☆印には、県庁所在地よりも人口が多い都市があります。この都市の名を漢字で答えなさい。</div>
+      <input type="text" class="text-answer" id="q3-7" placeholder="○○市">
+      <div class="feedback" id="fb-q3-7"></div>
+    </div>
+
+    <!-- 問8 -->
+    <div class="question">
+      <div class="q-num">問8</div>
+      <div class="q-text">⑤〜⑧と、その県に位置する工業がさかんな都市の組み合わせとして正しいものを選びなさい。</div>
+      <div class="options" id="q3-8-opts">
+        <div class="option"><label><input type="radio" name="q3-8" value="ア"> ア　⑤＝諏訪</label></div>
+        <div class="option"><label><input type="radio" name="q3-8" value="イ"> イ　⑥＝鯖江</label></div>
+        <div class="option"><label><input type="radio" name="q3-8" value="ウ"> ウ　⑦＝燕</label></div>
+        <div class="option"><label><input type="radio" name="q3-8" value="エ"> エ　⑧＝小千谷</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-8"></div>
+    </div>
+
+    <!-- 問9 -->
+    <div class="question">
+      <div class="q-num">問9</div>
+      <div class="q-text">②〜⑦の経線のうち、3つは同じ経度です。ほかの3つとは異なるものを選びなさい。</div>
+      <div class="options" id="q3-9-opts">
+        <div class="option"><label><input type="radio" name="q3-9" value="②"> ②</label></div>
+        <div class="option"><label><input type="radio" name="q3-9" value="③"> ③</label></div>
+        <div class="option"><label><input type="radio" name="q3-9" value="④"> ④</label></div>
+        <div class="option"><label><input type="radio" name="q3-9" value="⑤"> ⑤</label></div>
+        <div class="option"><label><input type="radio" name="q3-9" value="⑥"> ⑥</label></div>
+        <div class="option"><label><input type="radio" name="q3-9" value="⑦"> ⑦</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-9"></div>
+    </div>
+
+    <!-- 問10 -->
+    <div class="question">
+      <div class="q-num">問10</div>
+      <div class="q-text">①〜⑧以外の中部地方の県について述べた文として<strong>正しくないもの</strong>を選びなさい。</div>
+      <div class="options" id="q3-10-opts">
+        <div class="option"><label><input type="radio" name="q3-10" value="ア"> ア　中部地方で最も面積が大きな県です。</label></div>
+        <div class="option"><label><input type="radio" name="q3-10" value="イ"> イ　合掌造りの集落が見られる白川郷があります。</label></div>
+        <div class="option"><label><input type="radio" name="q3-10" value="ウ"> ウ　県の南部には輪中とよばれる地域が見られます。</label></div>
+        <div class="option"><label><input type="radio" name="q3-10" value="エ"> エ　新幹線が通っています。</label></div>
+      </div>
+      <div class="feedback" id="fb-q3-10"></div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-area">
+    <button class="btn btn-primary" onclick="checkAll()">答え合わせをする</button>
+    <button class="btn btn-secondary" onclick="resetAll()">やり直す</button>
+  </div>
+
+</div>
+
+<script>
+const answers = {
+  // 大問1
+  q1a: 'ア',
+  q1c: 'ウ',
+  q2: 'エ',
+  'q3-1': ['前橋市', '前橋'],
+  'q3-2': 'イ',
+  q4: { keywords: ['台風', '被害', '避ける'], hint: '台風の被害を避けるため。' },
+  q5: ['銚子', '銚子港'],
+  q6: ['石灰石', '石灰岩'],
+  q7: ['ゼロメートル', 'ゼロメートル地帯', '０メートル', '0メートル'],
+  q8: 'ア',
+  // 大問2
+  'q2-1': ['日光', 'にっこう'],
+  'q2-2': ['中禅寺湖', '中禅寺', 'ちゅうぜんじ'],
+  'q2-3-1': 'ウ',
+  'q2-3-2': 'イ',
+  'q2-3-3': 'ウ',
+  'q2-4-2': 'エ',
+  'q2-5-1': ['相模', '相模湾', 'さがみ'],
+  'q2-5-2': 'イ',
+  'q2-6': ['634'],
+  'q2-7-1': 'ア',
+  'q2-7-2': 'イ',
+  'q2-7-3': ['小笠原諸島', '小笠原', 'おがさわら'],
+  'q2-8-1': ['富岡製糸場', '富岡'],
+  'q2-8-2': ['東京国際空港', '羽田空港', '羽田', '東京国際'],
+  // 大問3
+  'q3-1': ['甲府市', '甲府'],
+  'q3-2': 'エ',
+  'q3-3': 'エ・イ',
+  'q3-4': 'イ',
+  'q3-5': 'エ',
+  'q3-7': ['浜松市', '浜松'],
+  'q3-8': 'ア',
+  'q3-9': '②',
+  'q3-10': 'ア',
+};
+
+const pointMap = {
+  q1a:2, q1c:2, q2:2, 'q3-1':2, 'q3-2':2, q4:3, q5:2, q6:2, q7:2, q8:2,
+  'q2-1':2, 'q2-2':2, 'q2-3-1':2, 'q2-3-2':2, 'q2-3-3':2,
+  'q2-4-2':2, 'q2-5-1':2, 'q2-5-2':2, 'q2-6':2,
+  'q2-7-1':2, 'q2-7-2':2, 'q2-7-3':2, 'q2-8-1':2, 'q2-8-2':2,
+  'q3-1':2, 'q3-2':2, 'q3-3':2, 'q3-4':2, 'q3-5':2,
+  'q3-7':2, 'q3-8':2, 'q3-9':2, 'q3-10':2,
+};
+
+const sections = {
+  sc1: ['q1a','q1c','q2','q3-1','q3-2','q4','q5','q6','q7','q8'],
+  sc2: ['q2-1','q2-2','q2-3-1','q2-3-2','q2-3-3','q2-4-2','q2-5-1','q2-5-2','q2-6','q2-7-1','q2-7-2','q2-7-3','q2-8-1','q2-8-2'],
+  sc3: ['q3-1','q3-2','q3-3','q3-4','q3-5','q3-7','q3-8','q3-9','q3-10'],
+};
+
+function getRadioValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+
+function getTextValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function normalizeText(s) {
+  return s.replace(/\s+/g, '').replace(/（|）/g,'').toLowerCase();
+}
+
+function checkAnswer(key) {
+  const correct = answers[key];
+  let userVal, isCorrect, feedbackEl;
+
+  // Radio-based
+  const radioKeys = ['q1a','q1c','q2','q3-2','q8','q2-3-1','q2-3-2','q2-3-3','q2-4-2','q2-5-2','q2-7-1','q2-7-2','q3-2','q3-3','q3-4','q3-5','q3-8','q3-9','q3-10'];
+
+  if (typeof correct === 'string' && radioKeys.includes(key)) {
+    userVal = getRadioValue(key);
+    isCorrect = userVal === correct;
+    feedbackEl = document.getElementById('fb-' + key);
+    highlightOptions(key, correct, userVal);
+  } else if (typeof correct === 'string') {
+    userVal = getTextValue(key);
+    isCorrect = normalizeText(userVal) === normalizeText(correct);
+    feedbackEl = document.getElementById('fb-' + key);
+  } else if (Array.isArray(correct)) {
+    userVal = getTextValue(key);
+    isCorrect = correct.some(c => normalizeText(userVal) === normalizeText(c));
+    feedbackEl = document.getElementById('fb-' + key);
+  } else if (correct && correct.keywords) {
+    userVal = getTextValue(key);
+    isCorrect = correct.keywords.every(k => userVal.includes(k));
+    feedbackEl = document.getElementById('fb-' + key);
+  }
+
+  if (!feedbackEl) return false;
+
+  if (userVal === null || userVal === '') {
+    feedbackEl.className = 'feedback info';
+    const ans = Array.isArray(correct) ? correct[0] : (correct.hint || correct);
+    feedbackEl.textContent = '未回答　正解：' + ans;
+    return false;
+  }
+
+  if (isCorrect) {
+    feedbackEl.className = 'feedback correct';
+    feedbackEl.textContent = '✓ 正解！';
+  } else {
+    feedbackEl.className = 'feedback wrong';
+    const ans = Array.isArray(correct) ? correct[0] : (correct.hint || correct);
+    feedbackEl.textContent = '✗ 不正解　正解：' + ans;
+  }
+
+  return isCorrect;
+}
+
+function highlightOptions(name, correct, user) {
+  const labels = document.querySelectorAll(`input[name="${name}"]`);
+  labels.forEach(input => {
+    const label = input.parentElement;
+    label.classList.remove('correct-ans','wrong-ans');
+    if (input.value === correct) label.classList.add('correct-ans');
+    else if (input.value === user && user !== correct) label.classList.add('wrong-ans');
+  });
+}
+
+function checkAll() {
+  let totals = { sc1:0, sc2:0, sc3:0 };
+
+  Object.keys(answers).forEach(key => {
+    const ok = checkAnswer(key);
+    const pt = pointMap[key] || 0;
+    if (ok) {
+      if (sections.sc1.includes(key)) totals.sc1 += pt;
+      else if (sections.sc2.includes(key)) totals.sc2 += pt;
+      else if (sections.sc3.includes(key)) totals.sc3 += pt;
+    }
+  });
+
+  document.getElementById('sc1').textContent = totals.sc1 + '点';
+  document.getElementById('sc2').textContent = totals.sc2 + '点';
+  document.getElementById('sc3').textContent = totals.sc3 + '点';
+  document.getElementById('sc-total').textContent = (totals.sc1 + totals.sc2 + totals.sc3) + '点';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetAll() {
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[type="text"]').forEach(t => t.value = '');
+  document.querySelectorAll('.feedback').forEach(f => { f.className = 'feedback'; f.textContent = ''; });
+  document.querySelectorAll('label').forEach(l => l.classList.remove('correct-ans','wrong-ans'));
+  ['sc1','sc2','sc3','sc-total'].forEach(id => document.getElementById(id).textContent = '—');
+}
+</script>
+</body>
+</html>
